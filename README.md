@@ -1,4 +1,4 @@
-# PR Security Reviewer (ADK Taskmaster agent)
+# DevSec Taskrunner
 
 Autonomous DevSecOps workflow: review a PR/diff or local repo, then **save a durable security report** (local filesystem and optionally Google Cloud Storage).
 
@@ -20,28 +20,80 @@ Built for the [All Things Agentic Hackathon](https://allthingsagentichackathon.d
 - **Action step**: `save_security_report` writes Markdown under `solodby_agent/reports/`
 - Optional upload to `gs://$REPORTS_GCS_BUCKET/security-reports/`
 
-## Local setup
+## Reproducible Testing instructions
+
+These steps reproduce a full review → save-report run on a clean machine.
+
+### Prerequisites
+
+- Python 3.11+ (3.12/3.14 also works)
+- macOS/Linux recommended
+- Gemini API key **or** Vertex AI credentials in a supported region
+- Optional: [gitleaks](https://github.com/gitleaks/gitleaks), [semgrep](https://semgrep.dev/)
+
+### 1. Clone and install
 
 ```bash
-cd /path/to/adk-workspace
+git clone https://github.com/solodby/devsec-taskrunner.git
+cd devsec-taskrunner
 python3 -m venv .venv
-source .venv/bin/activate
+source .venv/bin/activate   # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
-
-# API key (Gemini Developer API)
-cp solodby_agent/.env.example solodby_agent/.env
-# edit GOOGLE_API_KEY=
-
-# Optional scanners
-brew install gitleaks          # required for secret scan tool
-brew install semgrep           # optional SAST
-
-adk web
-# or: adk run solodby_agent "Review this diff: ..."
-# or: adk api_server --auto_create_session .
 ```
 
-## Demo prompts
+### 2. Configure credentials
+
+```bash
+cp solodby_agent/.env.example solodby_agent/.env
+# Edit solodby_agent/.env:
+#   GOOGLE_GENAI_USE_ENTERPRISE=0
+#   GOOGLE_API_KEY=<your-key>
+```
+
+Do not commit `.env`.
+
+### 3. Optional scanners
+
+```bash
+brew install gitleaks    # secret scan tool
+brew install semgrep     # optional SAST; agent continues if missing
+```
+
+### 4. Smoke test (CLI, ~30s)
+
+```bash
+source .venv/bin/activate
+adk run solodby_agent 'Review this diff and save a report:
+
++ query = f"SELECT * FROM users WHERE id = {user_id}"'
+```
+
+**Expected:**
+
+- Verdict includes SQL injection / CWE-89 style finding
+- Agent calls `save_security_report`
+- New file appears under `solodby_agent/reports/*.md`
+
+```bash
+ls solodby_agent/reports/
+```
+
+### 5. Interactive UI
+
+```bash
+adk web
+```
+
+Open http://127.0.0.1:8000 → select `solodby_agent` → paste a demo prompt below.
+
+### 6. API server (optional)
+
+```bash
+adk api_server --auto_create_session .
+# POST http://127.0.0.1:8000/run with app_name=solodby_agent
+```
+
+### Demo prompts
 
 ```text
 Review this diff and save a report:
@@ -50,11 +102,24 @@ Review this diff and save a report:
 ```
 
 ```text
-Full workflow for /path/to/repo:
+Full workflow for /absolute/path/to/a/git/repo:
 1) uncommitted git diff
 2) gitleaks working tree
 3) save security report with verdict
 ```
+
+### Pass / fail checklist
+
+| Check | Pass if |
+| --- | --- |
+| Agent loads | `adk run` / `adk web` starts without import errors |
+| Diff review | Findings table with severity + recommendation |
+| Action | `reports/*.md` created after review |
+| Tool degrade | Without semgrep, review still completes |
+
+### Hosted test (Cloud Run)
+
+If a Cloud Run URL is listed on the Devpost project page, open it and run the same pasted-diff prompt. Cloud Run cannot read your laptop filesystem — use **pasted diffs** for hosted testing.
 
 ## Deploy to Cloud Run
 
