@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>DevSec Taskrunner — Demo Deck</title>
+  <style>
+    :root {
+      --bg: #0f1419;
+      --fg: #e8eef4;
+      --muted: #9aa8b5;
+      --accent: #3dd6c3;
+      --warn: #f0b429;
+      --card: #1a222c;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0; height: 100%;
+      background: var(--bg); color: var(--fg);
+      font-family: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    }
+    .deck { height: 100%; position: relative; }
+    .slide {
+      display: none;
+      height: 100%;
+      padding: 6vh 8vw;
+      flex-direction: column;
+      justify-content: center;
+      gap: 1.2rem;
+      background:
+        radial-gradient(1200px 600px at 10% -10%, #1c3a36 0%, transparent 55%),
+        radial-gradient(900px 500px at 100% 100%, #243044 0%, transparent 50%),
+        var(--bg);
+    }
+    .slide.active { display: flex; }
+    .eyebrow {
+      color: var(--accent);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+    h1 {
+      font-family: "IBM Plex Serif", Georgia, serif;
+      font-size: clamp(2.2rem, 5vw, 3.6rem);
+      line-height: 1.1;
+      margin: 0;
+      max-width: 18ch;
+    }
+    h2 {
+      font-size: clamp(1.6rem, 3.5vw, 2.4rem);
+      margin: 0;
+      max-width: 28ch;
+    }
+    p, li {
+      font-size: clamp(1.05rem, 2vw, 1.35rem);
+      color: var(--muted);
+      line-height: 1.45;
+      max-width: 42ch;
+    }
+    ul { margin: 0; padding-left: 1.2rem; }
+    li { margin: 0.45rem 0; }
+    .oneliner {
+      color: var(--fg);
+      font-size: clamp(1.2rem, 2.4vw, 1.7rem);
+      max-width: 36ch;
+      border-left: 3px solid var(--accent);
+      padding-left: 1rem;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1rem;
+      width: min(900px, 100%);
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid #2a3542;
+      border-radius: 10px;
+      padding: 1rem 1.1rem;
+    }
+    .card strong { display: block; color: var(--fg); margin-bottom: 0.35rem; }
+    .card span { color: var(--muted); font-size: 0.95rem; }
+    .stack {
+      display: flex; flex-wrap: wrap; gap: 0.5rem;
+    }
+    .tag {
+      background: #243040;
+      border: 1px solid #334556;
+      color: var(--fg);
+      padding: 0.35rem 0.7rem;
+      border-radius: 999px;
+      font-size: 0.9rem;
+    }
+    .footer {
+      position: fixed;
+      left: 0; right: 0; bottom: 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.75rem 1.25rem;
+      color: #6d7c8a;
+      font-size: 0.85rem;
+      background: linear-gradient(transparent, rgba(0,0,0,.45));
+    }
+    kbd {
+      background: #243040;
+      border: 1px solid #3a4a5a;
+      border-radius: 4px;
+      padding: 0.1rem 0.35rem;
+      font-size: 0.8rem;
+    }
+    .notes {
+      position: fixed;
+      right: 1rem;
+      bottom: 3rem;
+      max-width: 320px;
+      background: rgba(20, 28, 36, 0.92);
+      border: 1px solid #334556;
+      border-radius: 8px;
+      padding: 0.75rem 0.9rem;
+      font-size: 0.8rem;
+      color: #b7c4d0;
+      display: none;
+    }
+    .notes.show { display: block; }
+    .notes strong { color: var(--warn); }
+  </style>
+</head>
+<body>
+  <div class="deck" id="deck">
+
+    <section class="slide active" data-notes="Say the one-liner. Then: problem → workflow → live demo next.">
+      <div class="eyebrow">All Things Agentic · Taskmaster</div>
+      <h1>DevSec Taskrunner</h1>
+      <p class="oneliner">Security review that ends as a saved report — not another chat.</p>
+      <p>Gemini 3.5 Flash · Google ADK · Cloud Run</p>
+    </section>
+
+    <section class="slide" data-notes="20s. Speak from experience without company names.">
+      <div class="eyebrow">Problem</div>
+      <h2>Merge reviews still burn time</h2>
+      <ul>
+        <li>Secrets and unsafe IaC hide in diffs</li>
+        <li>Scanners dump noise without context</li>
+        <li>Chat advice disappears; nothing attaches to the MR</li>
+      </ul>
+    </section>
+
+    <section class="slide" data-notes="20s. Emphasize ACTION = save report.">
+      <div class="eyebrow">What it does</div>
+      <h2>One chore, four steps</h2>
+      <div class="grid">
+        <div class="card"><strong>1. Gather</strong><span>Pasted diff or repo path</span></div>
+        <div class="card"><strong>2. Scan</strong><span>git · gitleaks · semgrep</span></div>
+        <div class="card"><strong>3. Decide</strong><span>Findings table + verdict</span></div>
+        <div class="card"><strong>4. Persist</strong><span>Markdown report (+ GCS)</span></div>
+      </div>
+    </section>
+
+    <section class="slide" data-notes="Switch to adk web / Cloud Run UI. Paste SQL diff. Show Findings + report path.">
+      <div class="eyebrow">Live demo</div>
+      <h2>Watch the workflow</h2>
+      <ul>
+        <li>Paste a risky diff</li>
+        <li>Get ranked findings</li>
+        <li>Confirm <code>save_security_report</code> wrote an artifact</li>
+      </ul>
+      <p>Next: prove it runs on Google Cloud.</p>
+    </section>
+
+    <section class="slide" data-notes="REQUIRED. Show Console → Cloud Run → .run.app URL on screen.">
+      <div class="eyebrow">Google Cloud</div>
+      <h2>Deployed on Cloud Run</h2>
+      <ul>
+        <li>Service running in Console</li>
+        <li>Public <code>.run.app</code> URL</li>
+        <li>Optional: report object in Cloud Storage</li>
+      </ul>
+    </section>
+
+    <section class="slide" data-notes="15s close. Repeat one-liner.">
+      <div class="eyebrow">Stack</div>
+      <h2>Built with</h2>
+      <div class="stack">
+        <span class="tag">Google ADK</span>
+        <span class="tag">Gemini 3.5 Flash</span>
+        <span class="tag">Cloud Run</span>
+        <span class="tag">Cloud Storage</span>
+        <span class="tag">gitleaks</span>
+        <span class="tag">Semgrep</span>
+        <span class="tag">Python</span>
+      </div>
+      <p class="oneliner" style="margin-top:1.5rem">DevSec Taskrunner finishes the review as a file you can attach.</p>
+    </section>
+
+  </div>
+
+  <div class="notes" id="notes"></div>
+  <div class="footer">
+    <span>DevSec Taskrunner</span>
+    <span><span id="pos">1</span> / <span id="total">6</span> · <kbd>←</kbd> <kbd>→</kbd> · <kbd>N</kbd> notes · <kbd>F</kbd> fullscreen</span>
+  </div>
+
+  <script>
+    const slides = [...document.querySelectorAll(".slide")];
+    const notesEl = document.getElementById("notes");
+    let i = 0;
+    document.getElementById("total").textContent = slides.length;
+
+    function show(n) {
+      i = (n + slides.length) % slides.length;
+      slides.forEach((s, idx) => s.classList.toggle("active", idx === i));
+      document.getElementById("pos").textContent = i + 1;
+      notesEl.innerHTML = "<strong>Speak:</strong> " + (slides[i].dataset.notes || "");
+    }
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowRight" || e.key === " ") { e.preventDefault(); show(i + 1); }
+      if (e.key === "ArrowLeft") { e.preventDefault(); show(i - 1); }
+      if (e.key === "n" || e.key === "N") { notesEl.classList.toggle("show"); }
+      if (e.key === "f" || e.key === "F") {
+        if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+        else document.exitFullscreen();
+      }
+    });
+
+    show(0);
+    notesEl.classList.add("show");
+  </script>
+</body>
+</html>
